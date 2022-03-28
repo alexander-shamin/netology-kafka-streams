@@ -76,9 +76,9 @@ public class PageViewTypedDemo {
     Topology buildTopology() {
         final JSONSerDe<PageView> pageViewJSONSerDe = new JSONSerDe<>(new TypeReference<PageView>() {});
         final JSONSerDe<User> userJSONSerDe = new JSONSerDe<>(new TypeReference<User>() {});
-        final JSONSerDe<PageViewByRegion> pageViewByRegionJSONSerDe = new JSONSerDe<>(new TypeReference<PageViewByRegion>() {});
+        final JSONSerDe<PageViewByGender> pageViewByGenderJSONSerDe = new JSONSerDe<>(new TypeReference<PageViewByGender>() {});
         final JSONSerDe<WindowedPageViewByRegion> windowedPageViewByRegionJSONSerDe = new JSONSerDe<>(new TypeReference<WindowedPageViewByRegion>() {});
-        final JSONSerDe<RegionCount> regionCountJSONSerDe = new JSONSerDe<>(new TypeReference<RegionCount>() {});
+        final JSONSerDe<GenderCount> genderCountJSONSerDe = new JSONSerDe<>(new TypeReference<GenderCount>() {});
 
         final StreamsBuilder builder = new StreamsBuilder();
 
@@ -89,33 +89,33 @@ public class PageViewTypedDemo {
 
         final Duration duration24Hours = Duration.ofHours(24);
 
-        final KStream<String, RegionCount> regionCount = views
+        final KStream<String, GenderCount> regionCount = views
                 .leftJoin(users, (view, profile) -> {
-                    final PageViewByRegion viewByRegion = new PageViewByRegion();
+                    final PageViewByGender viewByRegion = new PageViewByGender();
                     viewByRegion.user = view.userid;
                     viewByRegion.page = view.pageid;
 
                     if (profile != null) {
-                        viewByRegion.region = profile.regionid;
+                        viewByRegion.gender = profile.gender;
                     } else {
-                        viewByRegion.region = "UNKNOWN";
+                        viewByRegion.gender = "UNKNOWN";
                     }
                     return viewByRegion;
                 })
-                .map((user, viewRegion) -> new KeyValue<>(viewRegion.region, viewRegion))
-                .groupByKey(Grouped.with(Serdes.String(), pageViewByRegionJSONSerDe))
+                .map((user, viewRegion) -> new KeyValue<>(viewRegion.gender, viewRegion))
+                .groupByKey(Grouped.with(Serdes.String(), pageViewByGenderJSONSerDe))
                 .count()
                 .toStream()
                 .mapValues((k, v) -> {
-                    RegionCount count = new RegionCount();
+                    GenderCount count = new GenderCount();
 
-                    count.region = k;
+                    count.gender = k;
                     count.count = v;
 
                     return count;
                 });
 
-        regionCount.to("streams-pageviewstats-typed-output", Produced.with(Serdes.String(), regionCountJSONSerDe));
+        regionCount.to("streams-pageviewstats-typed-output", Produced.with(Serdes.String(), genderCountJSONSerDe));
 
         return builder.build();
     }

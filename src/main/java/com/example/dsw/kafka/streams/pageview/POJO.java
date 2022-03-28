@@ -17,10 +17,10 @@ public class POJO {
         public String gender;
     }
     
-    static public class PageViewByRegion {
+    static public class PageViewByGender {
         public String user;
         public String page;
-        public String region;
+        public String gender;
     }
 
     static public class WindowedPageViewByRegion {
@@ -28,8 +28,8 @@ public class POJO {
         public String region;
     }
 
-    static public class RegionCount {
+    static public class GenderCount {
         public long count;
-        public String region;
+        public String gender;
     }
 }
