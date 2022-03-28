@@ -89,8 +89,6 @@ public class PageViewTypedDemo {
 
         final Duration duration24Hours = Duration.ofHours(24);
 
-        //final KTable<String, PageViewByRegion> newS = builder.stream("tes")
-
         final KStream<String, RegionCount> regionCount = views
                 .leftJoin(users, (view, profile) -> {
                     final PageViewByRegion viewByRegion = new PageViewByRegion();
@@ -116,17 +114,6 @@ public class PageViewTypedDemo {
 
                     return count;
                 });
-//                .map((key, value) -> {
-//                    final WindowedPageViewByRegion wViewByRegion = new WindowedPageViewByRegion();
-//                    wViewByRegion.windowStart = key.window().start();
-//                    wViewByRegion.region = key.key();
-//
-//                    final RegionCount rCount = new RegionCount();
-//                    rCount.region = key.key();
-//                    rCount.count = value;
-//
-//                    return new KeyValue<>(wViewByRegion, rCount);
-//                });
 
         regionCount.to("streams-pageviewstats-typed-output", Produced.with(Serdes.String(), regionCountJSONSerDe));
 
